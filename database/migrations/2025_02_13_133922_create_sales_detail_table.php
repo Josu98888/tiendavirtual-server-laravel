@@ -12,10 +12,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('sales_detail', function (Blueprint $table) {
-            $table->integer('id', true);
-            $table->integer('idUser')->index('id');
-            $table->integer('idProduct')->nullable()->index('idproduct');
-            $table->integer('quantity')->nullable();
+            $table->id();
+            $table->foreignId('idUser') // Clave foránea
+                ->constrained('users') // Hace referencia a la tabla users
+                ->onDelete('cascade');
+            $table->foreignId('idProduct') // Clave foránea
+                ->constrained('products') // Hace referencia a la tabla products
+                ->onDelete('cascade');
+            $table->integer('quantity');
             $table->timestamps();
             $table->softDeletes();
         });

@@ -12,15 +12,17 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('products', function (Blueprint $table) {
-            $table->integer('id', true);
-            $table->integer('categorieID')->nullable()->index('product_fk');
-            $table->string('name', 50)->nullable();
-            $table->text('description')->nullable();
-            $table->string('image', 100)->nullable();
-            $table->double('priceNow', null, 0)->nullable();
-            $table->double('priceBefore', null, 0)->nullable();
-            $table->integer('numSales')->nullable()->default(0);
-            $table->integer('stock')->nullable();
+            $table->id();
+            $table->foreignId('categorieID') // Clave foránea
+                ->constrained('categories') // Hace referencia a la tabla categories
+                ->onDelete('cascade');
+            $table->string('name', 50);
+            $table->text('description');
+            $table->string('image', 100);
+            $table->double('priceNow');
+            $table->double('priceBefore');
+            $table->integer('numSales')->default(0);
+            $table->integer('stock');
             $table->timestamps();
             $table->softDeletes();
         });
