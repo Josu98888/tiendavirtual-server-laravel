@@ -29,63 +29,121 @@ class ProductController extends Controller
         return response()->json($data, $data['code']);
     }
 
-    // public function create()
-    // {
-    //     //
-    // }
-
     public function store(Request $request)
     {
+        // validamos los campos que nos llegan
+        $validate = Validator::make($request->all(), [
+            'name' => 'required|unique:products',
+            'categorieID' => 'required',
+            'description' => 'required',
+            'priceNow' => 'required',
+            'priceBefore' => 'required',
+            'stock' => 'required',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+        ]);
 
-        // obtenemos los datos
-        $json = $request->input('json', null);
-        $params = json_decode($json);
-        $params_array = json_decode($json, true);
-
-        if (!empty($params_array)) {
-            // validamos los campos que nos llegan
-            $validate = Validator::make($params_array, [
-                'name' => 'required|unique:products',
-                'categorieID' => 'required',
-                'description' => 'required',
-                'priceNow' => 'required',
-                'priceBefore' => 'required',
-                'stock' => 'required'
-            ]);
-
-            if ($validate->fails()) {
-                $data = [
-                    'status' => 'error',
-                    'code' => 404,
-                    'message' => 'Error, no se pudo crear el producto.'
-                ];
-            } else {
-                // instanciamos el producto con los datos y lo guardamos
-                $product = new Product();
-                $product->name = $params->name;
-                $product->categorieID = $params->categorieID;
-                $product->description = $params->description;
-                $product->image = $params->image;
-                $product->priceNow = $params->priceNow;
-                $product->priceBefore = $params->priceBefore;
-                $product->numSales = '0';
-                $product->stock = $params->stock;
-                $product->save();
-
-                $data = [
-                    'status' => 'success',
-                    'code' => 200,
-                    'product' => $product
-                ];
-            }
-        } else {
+        if ($validate->fails()) {
             $data = [
                 'status' => 'error',
-                'code' => 400,
-                'message' => 'Error al enviar los datos del producto.'
+                'code' => 404,
+                'message' => 'Error, no se pudo crear el producto.'
+            ];
+        } else {
+            // Crear una nueva instancia del producto
+            $product = new Product();
+            $product->name = $request->input('name');
+            $product->categorieID = $request->input('categorieID');
+            $product->description = $request->input('description');
+            $product->priceNow = $request->input('priceNow');
+            $product->priceBefore = $request->input('priceBefore');
+            $product->numSales = 0;
+            $product->stock = $request->input('stock');
+
+            // manejo de la imagen
+            if ($request->hasFile('image')) {
+                $image = $request->file('image');
+                $image_name = time() . $image->getClientOriginalName();
+                Storage::disk('products')->put($image_name, File::get($image));
+                $product->image = $image_name;
+            }
+            // Guardar el producto en la base de datos
+            $product->save();
+
+            $data = [
+                'status' => 'success',
+                'code' => 200,
+                'product' => $product
             ];
         }
 
+        return response()->json($data, $data['code']);
+    }
+
+    public function update(Request $request, string $id)
+    {
+        // validamos los datos 
+        $validate = Validator::make($request->all(), [
+            'name' => 'required',
+            'categorieID' => 'required',
+            'description' => 'required',
+            'priceNow' => 'required',
+            'priceBefore' => 'required'
+        ]);
+
+        // validamos si hubo fallas en la validación
+        if ($validate->fails()) {
+            $data = [
+                'status' => 'error',
+                'code' => 404,
+                'message' => 'Error, los datos enviados son incorrectos.'
+            ];
+        } else {
+            // buscamos el producto a actualizar
+            $product = Product::find($id);
+
+            // validamos si el producto existe
+            if (is_null($product)) {
+                $data = [
+                    'status' => 'error',
+                    'code' => 404,
+                    'message' => 'Error, el producto no existe.'
+                ];
+            } else {
+                // actualizamos los campos del producto
+                $product->name = $request->input('name');
+                $product->categorieID = $request->input('categorieID');
+                $product->description = $request->input('description');
+                $product->priceNow = $request->input('priceNow');
+                $product->priceBefore = $request->input('priceBefore');
+                $product->stock = $request->input('stock'); // Si tienes stock también en el formulario
+
+                // Manejo de la imagen
+                if ($request->hasFile('image')) {
+                    // eliminamos la imagen anterior si existe
+                    if ($product->image && Storage::disk('products')->exists($product->image)) {
+                        Storage::disk('products')->delete($product->image);
+                    }
+
+                    // guardamos la nueva imagen
+                    $image = $request->file('image');
+                    $image_name = time() . $image->getClientOriginalName();
+                    Storage::disk('products')->put($image_name, File::get($image));
+                    $product->image = $image_name;  // Asignamos la nueva imagen al producto
+                }
+
+                // guardamos los cambios en el producto
+                $product->save();
+
+                // respuesta exitosa
+                $data = [
+                    'status' => 'success',
+                    'code' => 200,
+                    'changes' => $product
+                ];
+            }
+        }
+
+        // único return con la respuesta
         return response()->json($data, $data['code']);
     }
 
@@ -152,11 +210,12 @@ class ProductController extends Controller
         return response()->json($data, $data['code']);
     }
 
-    public function getImage($filename) {
+    public function getImage($filename)
+    {
         // verificamos si la imagen existe
         $isset = Storage::disk('products')->exists($filename);
 
-        if($isset) {
+        if ($isset) {
             // obtenemos la imagen 
             $file = Storage::disk('products')->get($filename);
 
@@ -176,7 +235,7 @@ class ProductController extends Controller
     {
         // buscamos todos los productos coincidentes con text
         $products = Product::whereRaw("SOUNDEX(name) = SOUNDEX(?)", [$text])
-            ->orWhere('name', 'LIKE', '%'.$text.'%')
+            ->orWhere('name', 'LIKE', '%' . $text . '%')
             ->orderBy('id', 'desc')
             ->get();
 
@@ -194,68 +253,6 @@ class ProductController extends Controller
     //     //
     // }
 
-    public function update(Request $request, string $id)
-    {
-        //obtenemos los datos
-        $json = $request->input('json', null);
-        $params = json_decode($json);
-        $params_array = json_decode($json, true);
-
-        // verificamos si nos llego los datos
-        if (!empty($params_array)) {
-            // validamos los datos 
-            $validate = Validator::make($params_array, [
-                'name' => 'required',
-                'categorieID' => 'required',
-                'description' => 'required',
-                // 'image' => 'required',
-                'priceNow' => 'required',
-                'priceBefore' => 'required'
-            ]);
-
-            // validamos si hubo fallas en la validacion
-            if ($validate->fails()) {
-                $data = [
-                    'status' => 'error',
-                    'code' => 404,
-                    'message' => 'Error, los datos enviados son incorrectos.'
-                ];
-            } else {
-                // eliminamos los campos que no se deben actualizar
-                unset($params_array['id']);
-                unset($params_array['created_at']);
-
-                // bucamos el producto a actualizar
-                $product = Product::where('id', $id)->first();
-
-                // validamos si el producto existe
-                if (is_object($product) && !empty($product)) {
-                    // actualizamos el producto
-                    $product->update($params_array);
-
-                    $data = [
-                        'status' => 'success',
-                        'code' => 200,
-                        'changes' => $params_array
-                    ];
-                } else {
-                    $data = [
-                        'status' => 'error',
-                        'code' => 404,
-                        'message' => 'Error, el producto no existe.'
-                    ];
-                }
-            }
-        } else {
-            $data = [
-                'status' => 'error',
-                'code' => 404,
-                'message' => 'Error, los datos no se han enviado.'
-            ];
-        }
-
-        return response()->json($data, $data['code']);
-    }
 
     public function destroy(string $id)
     {
@@ -291,13 +288,14 @@ class ProductController extends Controller
         return response()->json($data, $data['code']);
     }
 
-    public function getProductsByCategory($id) {
+    public function getProductsByCategory($id)
+    {
         // obtenemos los productos por categoria
         $products = Product::where('categorieId', $id)->get();
         // obtenemos el titulo de las categorias
         $categorie = Categorie::where('id', $id)->first();
 
-        if(!empty($products)) {
+        if (!empty($products)) {
             $data = [
                 'status' => 'success',
                 'code' => 200,

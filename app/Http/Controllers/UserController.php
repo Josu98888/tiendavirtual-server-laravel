@@ -154,35 +154,38 @@ class UserController extends Controller
         $jwtAuth = new JwtAuth();
         $checkToken = $jwtAuth->checkToken($token);
 
-        $json = $request->input('json', null);
-        $params_array = json_decode($json, true);
-
-        if ($checkToken && !empty($params_array)) {
+        if ($checkToken) {
             // obtener el user identificado
             $user = $jwtAuth->checkToken($token, true);
+            $id = $user->sub;
+            $user = User::findOrFail($id);
 
-            // validar los datos
-            $validate = Validator::make($params_array, [
-                'name' => 'required|alpha',
-                'lastname' => 'required|alpha',
-                'email' => 'required|email|unique:users' . $user->sub
+            // Validar los datos del request
+            $validatedData = $request->validate([
+                'name' => 'nullable|string|max:255',
+                'lastname' => 'nullable|string|max:255',
+                'email' => 'nullable|email|max:255|unique:users,email,' . $user->id,
+                'image' => 'nullable|image|mimes:jpg,png,jpeg,gif|max:2048'
             ]);
 
-            // eliminar los campos que no deseo actualizar
-            unset($params_array['id']);
-            unset($params_array['role']);
-            unset($params_array['password']);
-            unset($params_array['created_at']);
-            unset($params_array['remember_token']);
+            // Actualizar los datos del usuario (excepto la imagen)
+            $user->fill($request->except(['image']));
 
-            // actualizamos el user
-            $user_update = User::where('id', $user->sub)->update($params_array);
+            if ($request->hasFile('image')) {
+                if ($user->image) {
+                    Storage::disk('users')->delete($user->image);
+                }
+                $image = $request->file('image');
+                $image_name = time() . $image->getClientOriginalName();
+                Storage::disk('users')->put($image_name, File::get($image));
+                $user->image = $image_name;
+            }
 
+            $userUpdate = $request->all();
             $data = [
                 'status' => 'success',
                 'code' => 200,
-                'user' => $user,
-                'chages' => $params_array
+                'user' => $user
             ];
         } else {
             $data = [
@@ -191,6 +194,8 @@ class UserController extends Controller
                 'message' => 'El usuario no esta identificado.'
             ];
         }
+        // Guardar cambios en la base de datos
+        $user->save();
 
         return response()->json($data, $data['code']);
     }
