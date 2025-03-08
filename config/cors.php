@@ -14,6 +14,8 @@ return [
 
     'exposed_headers' => [],
 
+    'Access-Control-Allow-Origin' => ['*'],
+
     'max_age' => 0,
 
     'supports_credentials' => false,
