@@ -189,14 +189,14 @@ class UserController extends Controller
                 // Guardar nueva imagen
                 $image = $request->file('image');
                 $image_name = time() . '_' . $image->getClientOriginalName();
-                $image_path = $image->storeAs('', $image_name, 'users');
+                Storage::disk('users')->put($image_name, File::get($image));
 
                 // Guardar la ruta relativa en la base de datos
                 $user->image = $image_name;
             }
             // Guardar cambios en la base de datos
             $user->save();
-            
+
             $userUpdate = $request->all();
             $data = [
                 'status' => 'success',
