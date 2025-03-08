@@ -49,6 +49,7 @@ return [
             'root' => storage_path('app/public/users'),
             'url' => env('APP_URL').'/storage',
             'visibility' => 'public',
+            'max_size'  => 1024 * 1024 * 200,
         ],
 
         'products' => [
