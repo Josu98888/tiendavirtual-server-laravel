@@ -171,16 +171,32 @@ class UserController extends Controller
             // Actualizar los datos del usuario (excepto la imagen)
             $user->fill($request->except(['image']));
 
+            // if ($request->hasFile('image')) {
+            //     if ($user->image) {
+            //         Storage::disk('users')->delete($user->image);
+            //     }
+            //     $image = $request->file('image');
+            //     $image_name = time() . $image->getClientOriginalName();
+            //     Storage::disk('users')->put($image_name, File::get($image));
+            //     $user->image = $image_name;
+            // }
             if ($request->hasFile('image')) {
+                // Eliminar imagen anterior si existe
                 if ($user->image) {
                     Storage::disk('users')->delete($user->image);
                 }
+
+                // Guardar nueva imagen
                 $image = $request->file('image');
-                $image_name = time() . $image->getClientOriginalName();
-                Storage::disk('users')->put($image_name, File::get($image));
+                $image_name = time() . '_' . $image->getClientOriginalName();
+                $image_path = $image->storeAs('', $image_name, 'users');
+
+                // Guardar la ruta relativa en la base de datos
                 $user->image = $image_name;
             }
-
+            // Guardar cambios en la base de datos
+            $user->save();
+            
             $userUpdate = $request->all();
             $data = [
                 'status' => 'success',
@@ -194,8 +210,7 @@ class UserController extends Controller
                 'message' => 'El usuario no esta identificado.'
             ];
         }
-        // Guardar cambios en la base de datos
-        $user->save();
+
 
         return response()->json($data, $data['code']);
     }
