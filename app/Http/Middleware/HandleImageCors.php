@@ -22,7 +22,7 @@ class HandleImageCors
         if ($request->is('imagenes/*')) {  // Ajusta la ruta según corresponda
             // Agregar encabezados CORS para permitir acceso a las imágenes
             $response->headers->set('Access-Control-Allow-Origin', '*');  // Permite todos los dominios
-            $response->headers->set('Access-Control-Allow-Methods', 'GET');  // Permite el método GET
+            $response->headers->set('Access-Control-Allow-Methods', 'GET, POST');  // Permite el método GET POST
             $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, X-Requested-With');
         }
 
