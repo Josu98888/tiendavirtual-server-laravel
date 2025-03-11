@@ -251,14 +251,6 @@ class UserController extends Controller
 
     public function getImage($filename)
     {
-        // // verificamos si esiste la imagen
-        // $isset = Storage::disk('users')->exists($filename);
-        // if ($isset) {
-            //obtenemos la imagen
-            // $file = Storage::disk('users')->get($filename);
-            // // retornamos la imagen
-            // return new Response($file, 200);
-
             $path = storage_path("app/public/users/{$filename}");
 
             if (File::exists($path)) {

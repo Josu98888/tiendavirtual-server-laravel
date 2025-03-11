@@ -212,14 +212,13 @@ class ProductController extends Controller
 
     public function getImage($filename)
     {
-        // verificamos si la imagen existe
-        $isset = Storage::disk('products')->exists($filename);
+        $path = storage_path("app/public/products/{$filename}");
 
-        if ($isset) {
-            // obtenemos la imagen 
-            $file = Storage::disk('products')->get($filename);
-
-            return new Response($file, 200);
+            if (File::exists($path)) {
+                $file = File::get($path);
+                $mimeType = File::mimeType($path); // Obtiene el tipo MIME correcto
+        
+                return response($file, 200)->header("Content-Type", $mimeType);
         } else {
             $data = [
                 'status' => 'error',
