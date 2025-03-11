@@ -9,7 +9,6 @@ use App\Http\Middleware\apiAuthMiddleware;
 use App\Http\Controllers\SaleController; 
 use App\Http\Controllers\SaleDetailController;
 use App\Http\Middleware\HandleImageCors;
-use Illuminate\Http\Middleware\HandleCors;
 
 //pruebas
 //creamos la ruta para el controller y su metodo 
@@ -21,7 +20,7 @@ Route::post('/api/register', [UserController::class, 'register']);
 Route::post('/api/login', [UserController::class, 'login']);
 Route::post('/api/update' , [UserController::class, 'update'])->middleware(HandleImageCors::class);
 Route::post('/api/user/upload', [UserController::class, 'upload'])->middleware(apiAuthMiddleware::class);
-Route::get('/api/user/avatar/{filename}', [UserController::class, 'getImage'])->middleware(HandleImageCors::class);
+Route::get('/api/user/avatar/{filename}', [UserController::class, 'getImage']);
 Route::get('/api/user/detail/{id}', [UserController::class, 'detail']);
 
 // rutas del controller de categoria
