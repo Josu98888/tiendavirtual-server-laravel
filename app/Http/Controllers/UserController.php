@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\File;
 // para generar respuestas de descarga de archivos
 use Illuminate\Http\Response;
 
+
 class UserController extends Controller
 {
     //hacemos un metodo de prueba
@@ -250,13 +251,21 @@ class UserController extends Controller
 
     public function getImage($filename)
     {
-        // verificamos si esiste la imagen
-        $isset = Storage::disk('users')->exists($filename);
-        if ($isset) {
+        // // verificamos si esiste la imagen
+        // $isset = Storage::disk('users')->exists($filename);
+        // if ($isset) {
             //obtenemos la imagen
-            $file = Storage::disk('users')->get($filename);
-            // retornamos la imagen
-            return new Response($file, 200);
+            // $file = Storage::disk('users')->get($filename);
+            // // retornamos la imagen
+            // return new Response($file, 200);
+
+            $path = storage_path("app/public/users/{$filename}");
+
+            if (File::exists($path)) {
+                $file = File::get($path);
+                $mimeType = File::mimeType($path); // Obtiene el tipo MIME correcto
+        
+                return response($file, 200)->header("Content-Type", $mimeType);
         } else {
             $data = [
                 'status' => 'error',
