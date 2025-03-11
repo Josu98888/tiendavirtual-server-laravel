@@ -46,7 +46,7 @@ return [
 
         'users' => [
             'driver' => 'local',
-            'root' => storage_path('app/public/users'),
+            'root' => storage_path('app/users'),
             'url' => env('APP_URL').'/storage',
             'visibility' => 'public',
             'max_size'  => 1024 * 1024 * 200,
@@ -54,7 +54,7 @@ return [
 
         'products' => [
             'driver' => 'local',
-            'root' => storage_path('app/public/products'),
+            'root' => storage_path('app/products'),
             'url' => env('APP_URL').'/storage',
             'visibility' => 'public'
         ],
