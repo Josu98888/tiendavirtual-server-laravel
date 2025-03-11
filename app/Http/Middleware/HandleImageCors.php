@@ -21,9 +21,10 @@ class HandleImageCors
         // Verificar si el recurso solicitado es una imagen
         if ($request->is('imagenes/*')) {  // Ajusta la ruta según corresponda
             // Agregar encabezados CORS para permitir acceso a las imágenes
-            $response->headers->set('Access-Control-Allow-Origin', '*');  // Permite todos los dominios
-            $response->headers->set('Access-Control-Allow-Methods', 'GET, POST');  // Permite el método GET POST
-            $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, X-Requested-With');
+            $response->headers->set('Access-Control-Allow-Origin', 'https://tiendavirtual-client-angular.vercel.app');
+            $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+            $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    
         }
 
         return $response;
