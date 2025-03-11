@@ -10,9 +10,10 @@ return [
 
     'allowed_origins_patterns' => [],
 
-    'allowed_headers' => ['*'],
+    'allowedHeaders' => ['Access-Control-Allow-Origin', '*'],
 
     'exposed_headers' => [],
+    
 
     'Access-Control-Allow-Origin' => ['*'],
 
