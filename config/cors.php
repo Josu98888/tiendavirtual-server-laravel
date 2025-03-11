@@ -6,7 +6,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['*'],
+    'allowed_origins' => ['*, https://tiendavirtual-client-angular.vercel.app/'],
 
     'allowed_origins_patterns' => [],
 
