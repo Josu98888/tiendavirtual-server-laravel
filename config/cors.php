@@ -2,7 +2,7 @@
 
 return [
 
-    'paths' => ['api/*', 'sanctum/csrf-cookie' , 'storage/public*', 'update'],
+    'paths' => ['api/*', 'sanctum/csrf-cookie' , 'storage/public*'],
 
     'allowed_methods' => ['*'],
 
@@ -10,7 +10,7 @@ return [
 
     'allowed_origins_patterns' => [],
 
-    'allowedHeaders' => ['Access-Control-Allow-Origin', '*'],
+    'allowedHeaders' => ['*'],
 
     'exposed_headers' => [],
     
@@ -19,6 +19,6 @@ return [
 
     'max_age' => 0,
 
-    'supports_credentials' => true,
+    'supports_credentials' => false,
 
 ];
