@@ -12,5 +12,8 @@ use App\Models\User;
 
 class PruebaController extends Controller
 {
-    
+    public function index() {
+       
+        return view('welcome');
+    }
 }
