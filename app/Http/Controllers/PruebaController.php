@@ -10,4 +10,7 @@ use App\Models\Sale_Detail;
 use App\Models\Sale;
 use App\Models\User;
 
-
+class PruebaController extends Controller
+{
+    
+}
